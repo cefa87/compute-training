@@ -34,11 +34,11 @@ const start = () => {
 const init = () => {
   let operator = []
   if (md.value && as.value) {
-    operator.push('+', '-', '*', '/')
+    operator.push('+', '-', '×', '÷')
   } else if (as.value) {
     operator.push('+', '-')
   } else if (md.value) {
-    operator.push('*', '/')
+    operator.push('×', '÷')
   }
   // console.log(operator)
   for (let i = 0; i < number.value; i++) {
@@ -52,7 +52,7 @@ const init = () => {
       if (op === '-' && x <= y) {
         continue
       }
-      if (op === '/' && x % y != 0 || y == 0) {
+      if (op === '÷' && x % y != 0 || y == 0) {
         continue
       }
       flag = 0
@@ -81,14 +81,12 @@ const checkAnswer = () => {
   // answerShow.value=true
   autoNext()
   if (op === '+' && a == x + y) {
-    console.log('+')
     return true
   } else if (op === '-' && a == x - y) {
-    console.log('-')
     return true
-  } else if (op === '*' && a == x * y) {
+  } else if (op === '×' && a == x * y) {
     return true
-  } else if (op === '/' && a == x / y) {
+  } else if (op === '÷' && a == x / y) {
     return true
   } else {
     error.value++
@@ -126,11 +124,11 @@ watchEffect((onInvalidate) => {
 // 结果显示
 const resultShowStatus = ref(false)
 // 监听dataFlag
-watch(dataFlag, (newVal, oldVal) => {
+watch(dataFlag, (newVal) => {
   if (newVal == data.value.length) {
     resultShowStatus.value = true
   }
-  console.log('old:', oldVal, 'new', newVal)
+  // console.log('old:', oldVal, 'new', newVal)
 })
 // angin
 const angin=()=>{
