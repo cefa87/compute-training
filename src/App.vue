@@ -1,24 +1,51 @@
 <script setup lang="ts">
 import {ref} from "vue";
 import {MenuOutline} from "@vicons/ionicons5";
+// 键盘输入
 const btnKey = ref("");
 const btnTrans = (key: any) => {
   btnKey.value += key;
   console.log(btnKey.value);
 };
-const number = ref(20)
+// 运算参数
+const number=ref(20)
+const range = ref(20)
 const as = ref(true)
 const md = ref(false)
 const decimal = ref(false)
+//开始按钮
 const msgBarStatus = ref(true)
 const start = () => {
   if (as.value || md.value) {
     msgBarStatus.value = !msgBarStatus.value
+    init()
   }
 }
+// 初始化题目
 const init = () => {
-  
+  let operator=[]
+  if (md.value && as.value){
+    operator.push(['+','-','*','/'])
+  }else if (as.value){
+    operator.push(['+','-'])
+  }else if(md.value){
+    operator.push(['*','/'])
+  }
+  console.log(operator)
+  for (let i = 0; i < number.value; i++) {
+    let op = Math.floor(Math.random()*operator.length)
+    console.log(op)
+  }
+
 }
+// data
+const data=ref([
+  {
+    'x':1,
+    'y':1,
+    'operator':'+'
+  }
+])
 </script>
 
 <template>
@@ -38,9 +65,15 @@ const init = () => {
           </template>
           <div>
             <div class="input">
-              <n-input style="width: 80px;margin-right: 5px" size="small" v-model:value="number"
+              <div class="number">
+                <div class="numberSlider">
+                  <n-slider v-model:value="number" :step="10" :min="20" :max="100"/>
+                </div>
+                <span>{{number}}题</span>
+              </div>
+              <n-input style="width: 80px;margin:5px 5px 0 0" size="small" v-model:value="range"
                        placeholder="输入数字"/>
-              <span>以内(包含)的</span>
+              <span>以内的运算</span>
             </div>
             <div class="optionsBtn">
               <n-checkbox v-model:checked="as">加减</n-checkbox>
@@ -125,6 +158,18 @@ const init = () => {
 
 .header ion-icon:active {
   color: #079d4b;
+}
+.number{
+  display: flex;
+  justify-content: space-between;
+}
+.numberSlider{
+  width: 75%;
+}
+.number span{
+  text-align: center;
+  line-height: 18px;
+  font-size: 14px;
 }
 
 .startBtn {
