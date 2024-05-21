@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {computed, ref, watch, watchEffect} from "vue";
-import {MenuOutline} from "@vicons/ionicons5";
+import {MenuOutline,PrintOutline} from "@vicons/ionicons5";
 
 // Clearinput
 const clearInput = () => {
@@ -47,12 +47,20 @@ const init = () => {
     let op = operator[Math.floor(Math.random() * operator.length)]
     // console.log(op)
     while (flag) {
-      x = Math.floor(Math.random() * (range.value))
-      y = Math.floor(Math.random() * (range.value))
+      if(decimal.value && op!=='÷'){
+        x = parseFloat((Math.random() * range.value).toFixed(1))
+        y = parseFloat((Math.random() * range.value).toFixed(1))
+      }else {
+        x = Math.floor(Math.random() * range.value)
+        y = Math.floor(Math.random() * range.value)
+      }
       if (op === '-' && x <= y) {
         continue
       }
-      if (op === '÷' && x % y != 0 || y == 0) {
+      if (!decimal.value && op === '÷' && x % y != 0 || y == 0) {
+        continue
+      }
+      if (decimal.value && op === '÷' && !judgeDivisor(x,y) || y == 0) {
         continue
       }
       flag = 0
@@ -66,6 +74,21 @@ const init = () => {
     )
   }
 }
+
+// 判断2个数能否除尽
+const judgeDivisor=(m:any, n:any)=> {
+  var num:any = {};
+  var i = 0;
+  m = m % n;
+  var result = "";
+  while (m != 0 && !(m in num)) {
+    num[m] = i++;
+    result += parseInt(String(m * 10 / n));
+    m = m * 10 % n;
+  }
+  return m == 0;
+}
+
 // data
 const data: any = ref([])
 const dataFlag = ref(0)
@@ -80,17 +103,32 @@ const checkAnswer = () => {
   // clearInput()
   // answerShow.value=true
   autoNext()
-  if (op === '+' && a == x + y) {
-    return true
-  } else if (op === '-' && a == x - y) {
-    return true
-  } else if (op === '×' && a == x * y) {
-    return true
-  } else if (op === '÷' && a == x / y) {
-    return true
-  } else {
-    error.value++
-    return false
+  if (decimal.value){
+    if (op === '+' && a == parseFloat((x+y).toFixed(1))) {
+      return true
+    } else if (op === '-' && a == parseFloat((x-y).toFixed(1))) {
+      return true
+    } else if (op === '×' && a == parseFloat((x*y).toFixed(8))) {
+      return true
+    } else if (op === '÷' && a == parseFloat((x/y).toFixed(8))) {
+      return true
+    } else {
+      error.value++
+      return false
+    }
+  }else {
+    if (op === '+' && a == x + y) {
+      return true
+    } else if (op === '-' && a == x - y) {
+      return true
+    } else if (op === '×' && a == x * y) {
+      return true
+    } else if (op === '÷' && a == x / y) {
+      return true
+    } else {
+      error.value++
+      return false
+    }
   }
 }
 // error
@@ -171,10 +209,22 @@ const angin=()=>{
               <div class="optionsBtn">
                 <n-checkbox v-model:checked="as">加减</n-checkbox>
                 <n-checkbox v-model:checked="md">乘除</n-checkbox>
-                <n-checkbox v-model:checked="decimal" disabled>小数</n-checkbox>
+                <n-checkbox v-model:checked="decimal">小数</n-checkbox>
               </div>
               <div class="startBtn">
-                <n-button style="width: 100%" strong secondary type="success" @click="start()">开始</n-button>
+                <n-button style="width: 78%" strong secondary type="success" @click="start()">开始</n-button>
+                <n-popover trigger="hover">
+                  <template #trigger>
+                    <n-button style="width: 20%" text>
+                      <template #icon>
+                        <n-icon size="24">
+                          <PrintOutline/>
+                        </n-icon>
+                      </template>
+                    </n-button>
+                  </template>
+                  <span>打印题目</span>
+                </n-popover>
               </div>
             </div>
           </n-popover>
@@ -298,6 +348,8 @@ const angin=()=>{
 
 .startBtn {
   margin-top: 5px;
+  display: flex;
+  justify-content: space-between;
 }
 
 .optionsBtn {
