@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import {computed, ref, watch, watchEffect} from "vue";
 import {MenuOutline,PrintOutline} from "@vicons/ionicons5";
+import PrintView from "./printView.vue";
 
 // Clearinput
 const clearInput = () => {
@@ -168,10 +169,12 @@ watch(dataFlag, (newVal) => {
   }
   // console.log('old:', oldVal, 'new', newVal)
 })
-// angin
-const angin=()=>{
+// reload
+const reload=()=>{
   location.reload()
 }
+// 打印状态
+const printStatus=ref(false)
 </script>
 
 <template>
@@ -215,7 +218,7 @@ const angin=()=>{
                 <n-button style="width: 78%" strong secondary type="success" @click="start()">开始</n-button>
                 <n-popover trigger="hover">
                   <template #trigger>
-                    <n-button style="width: 20%" text>
+                    <n-button style="width: 20%" text @click="printStatus=!printStatus;init()">
                       <template #icon>
                         <n-icon size="24">
                           <PrintOutline/>
@@ -294,7 +297,23 @@ const angin=()=>{
           </div>
         </div>
         <div class="resultBtn">
-          <n-button strong secondary type="primary" @click="angin()">再来一次</n-button>
+          <n-button strong secondary type="primary" @click="reload()">再来一次</n-button>
+        </div>
+      </n-card>
+    </n-modal>
+
+    <n-modal v-model:show="printStatus">
+      <n-card
+          style="width: 1000px"
+          title="打印预览"
+          :bordered="false"
+          size="huge"
+          role="dialog"
+          aria-modal="true"
+      >
+        <print-view :data="data"></print-view>
+        <div class="printClosBtn">
+          <n-button @click="reload()">关闭</n-button>
         </div>
       </n-card>
     </n-modal>
@@ -405,5 +424,9 @@ const angin=()=>{
   margin-top: 20px;
   display: flex;
   justify-content: center;
+}
+.printClosBtn{
+  display: flex;
+  justify-content: right;
 }
 </style>
