@@ -3,3 +3,4 @@
 
 ## demo
 
+https://cefa87.github.io/compute-training/
