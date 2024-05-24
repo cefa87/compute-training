@@ -2,6 +2,8 @@
 import {computed, ref, watch, watchEffect} from "vue";
 import {MenuOutline,PrintOutline} from "@vicons/ionicons5";
 import PrintView from "./printView.vue";
+import audio_error from './assets/audio_error.mp3'
+import audio_success from './assets/audio_success.mp3'
 
 // Clearinput
 const clearInput = () => {
@@ -148,12 +150,20 @@ const answerShowStatus = ref(false)
 const answerColor = computed(() => {
   return answerShowStatus.value ? '#18a058' : '#d03050'
 })
+// 音频提示
+const audioError=new Audio(audio_error)
+const audioSuccess=new Audio(audio_success)
 // 监听答案
 watchEffect((onInvalidate) => {
   const k = btnKey.value
   const timer = setTimeout(() => {
     if (anwser.value !== '') {
       answerShowStatus.value = checkAnswer()
+      if(answerShowStatus.value){
+        audioSuccess.play()
+      }else {
+        audioError.play()
+      }
       answerShow.value = true
       console.log(k)
     }
