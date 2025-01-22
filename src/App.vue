@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {computed, ref, watch, watchEffect} from "vue";
-import {MenuOutline,PrintOutline} from "@vicons/ionicons5";
+import {MenuOutline, PrintOutline} from "@vicons/ionicons5";
 import PrintView from "./printView.vue";
 import audio_error from './assets/audio_error.mp3'
 import audio_success from './assets/audio_success.mp3'
@@ -9,6 +9,17 @@ import audio_success from './assets/audio_success.mp3'
 const clearInput = () => {
   btnKey.value = ''
   anwser.value = ''
+}
+
+// 时间
+const startTime = ref()
+const endTime = ref()
+const timeShow = (i:number)=>{
+  i=Math.floor(i/1000)
+  const hours = Math.floor(i / 3600);
+  const minutes = Math.floor((i % 3600) / 60);
+  const remainingSeconds = i % 60;
+  return `${hours}小时${minutes}分钟${remainingSeconds}秒`;
 }
 
 // 键盘输入
@@ -20,7 +31,10 @@ const btnTrans = (key: any) => {
 };
 // 运算参数
 const number = ref(20)
-const range = ref(20)
+const range = ref('20')
+const rangeOfNumber = computed(()=>{
+  return parseInt(range.value);
+})
 const as = ref(true)
 const md = ref(false)
 const decimal = ref(false)
@@ -31,6 +45,8 @@ const start = () => {
     msgBarStatus.value = !msgBarStatus.value
     init()
     clearInput()
+    startTime.value = new Date()
+    console.log(startTime.value)
   }
 }
 // 初始化题目
@@ -50,12 +66,12 @@ const init = () => {
     let op = operator[Math.floor(Math.random() * operator.length)]
     // console.log(op)
     while (flag) {
-      if(decimal.value && op!=='÷'){
-        x = parseFloat((Math.random() * range.value).toFixed(1))
-        y = parseFloat((Math.random() * range.value).toFixed(1))
-      }else {
-        x = Math.floor(Math.random() * range.value)
-        y = Math.floor(Math.random() * range.value)
+      if (decimal.value && op !== '÷') {
+        x = parseFloat((Math.random() * rangeOfNumber.value).toFixed(1))
+        y = parseFloat((Math.random() * rangeOfNumber.value).toFixed(1))
+      } else {
+        x = Math.floor(Math.random() * rangeOfNumber.value)
+        y = Math.floor(Math.random() * rangeOfNumber.value)
       }
       if (op === '-' && x <= y) {
         continue
@@ -63,7 +79,7 @@ const init = () => {
       if (!decimal.value && op === '÷' && x % y != 0 || y == 0) {
         continue
       }
-      if (decimal.value && op === '÷' && !judgeDivisor(x,y) || y == 0) {
+      if (decimal.value && op === '÷' && !judgeDivisor(x, y) || y == 0) {
         continue
       }
       flag = 0
@@ -79,8 +95,8 @@ const init = () => {
 }
 
 // 判断2个数能否除尽
-const judgeDivisor=(m:any, n:any)=> {
-  var num:any = {};
+const judgeDivisor = (m: any, n: any) => {
+  var num: any = {};
   var i = 0;
   m = m % n;
   var result = "";
@@ -106,20 +122,20 @@ const checkAnswer = () => {
   // clearInput()
   // answerShow.value=true
   autoNext()
-  if (decimal.value){
-    if (op === '+' && a == parseFloat((x+y).toFixed(1))) {
+  if (decimal.value) {
+    if (op === '+' && a == parseFloat((x + y).toFixed(1))) {
       return true
-    } else if (op === '-' && a == parseFloat((x-y).toFixed(1))) {
+    } else if (op === '-' && a == parseFloat((x - y).toFixed(1))) {
       return true
-    } else if (op === '×' && a == parseFloat((x*y).toFixed(8))) {
+    } else if (op === '×' && a == parseFloat((x * y).toFixed(8))) {
       return true
-    } else if (op === '÷' && a == parseFloat((x/y).toFixed(8))) {
+    } else if (op === '÷' && a == parseFloat((x / y).toFixed(8))) {
       return true
     } else {
       error.value++
       return false
     }
-  }else {
+  } else {
     if (op === '+' && a == x + y) {
       return true
     } else if (op === '-' && a == x - y) {
@@ -151,17 +167,17 @@ const answerColor = computed(() => {
   return answerShowStatus.value ? '#18a058' : '#d03050'
 })
 // 音频提示
-const audioError=new Audio(audio_error)
-const audioSuccess=new Audio(audio_success)
+const audioError = new Audio(audio_error)
+const audioSuccess = new Audio(audio_success)
 // 监听答案
 watchEffect((onInvalidate) => {
   const k = btnKey.value
   const timer = setTimeout(() => {
     if (anwser.value !== '') {
       answerShowStatus.value = checkAnswer()
-      if(answerShowStatus.value){
+      if (answerShowStatus.value) {
         audioSuccess.play()
-      }else {
+      } else {
         audioError.play()
       }
       answerShow.value = true
@@ -174,17 +190,18 @@ watchEffect((onInvalidate) => {
 const resultShowStatus = ref(false)
 // 监听dataFlag
 watch(dataFlag, (newVal) => {
-  if (newVal == data.value.length) {
+  if (newVal >= data.value.length) {
     resultShowStatus.value = true
+    endTime.value = new Date()
   }
   // console.log('old:', oldVal, 'new', newVal)
 })
 // reload
-const reload=()=>{
+const reload = () => {
   location.reload()
 }
 // 打印状态
-const printStatus=ref(false)
+const printStatus = ref(false)
 </script>
 
 <template>
@@ -197,50 +214,14 @@ const printStatus=ref(false)
           </div>
         </div>
         <div class="right">
-          <n-popover trigger="click" :show="msgBarStatus">
-            <template #trigger>
-              <n-button text @click="msgBarStatus=!msgBarStatus">
-                <template #icon>
-                  <n-icon size="30">
-                    <MenuOutline/>
-                  </n-icon>
-                </template>
-              </n-button>
+<!--          @click="msgBarStatus=!msgBarStatus"-->
+          <n-button text >
+            <template #icon>
+              <n-icon size="30">
+                <MenuOutline/>
+              </n-icon>
             </template>
-            <div>
-              <div class="input">
-                <div class="number">
-                  <div class="numberSlider">
-                    <n-slider v-model:value="number" :step="10" :min="20" :max="100"/>
-                  </div>
-                  <span>{{ number }}题</span>
-                </div>
-                <n-input style="width: 80px;margin:5px 5px 0 0" size="small" v-model:value="range"
-                         placeholder="输入数字"/>
-                <span>以内的运算</span>
-              </div>
-              <div class="optionsBtn">
-                <n-checkbox v-model:checked="as">加减</n-checkbox>
-                <n-checkbox v-model:checked="md">乘除</n-checkbox>
-                <n-checkbox v-model:checked="decimal">小数</n-checkbox>
-              </div>
-              <div class="startBtn">
-                <n-button style="width: 78%" strong secondary type="success" @click="start()">开始</n-button>
-                <n-popover trigger="hover">
-                  <template #trigger>
-                    <n-button style="width: 20%" text @click="printStatus=!printStatus;init()">
-                      <template #icon>
-                        <n-icon size="24">
-                          <PrintOutline/>
-                        </n-icon>
-                      </template>
-                    </n-button>
-                  </template>
-                  <span>打印题目</span>
-                </n-popover>
-              </div>
-            </div>
-          </n-popover>
+          </n-button>
         </div>
       </div>
       <div class="content">
@@ -299,6 +280,7 @@ const printStatus=ref(false)
           aria-modal="true"
       >
         <div class="resultContent">
+          <div class="time">用时：{{timeShow(endTime-startTime)}}</div>
           <div class="result">
             <n-progress type="dashboard" gap-position="bottom"
                         :percentage="Math.floor((number-error)/number*100)"
@@ -324,6 +306,51 @@ const printStatus=ref(false)
         <print-view :data="data"></print-view>
         <div class="printClosBtn">
           <n-button @click="reload()">关闭</n-button>
+        </div>
+      </n-card>
+    </n-modal>
+
+    <n-modal :mask-closable="false" v-model:show="msgBarStatus">
+      <n-card
+          style="width: 350px"
+          title="开始"
+          :bordered="false"
+          size="huge"
+          role="dialog"
+          aria-modal="true"
+      >
+        <div>
+          <div class="input">
+            <div class="number">
+              <div class="numberSlider">
+                <n-slider v-model:value="number" :step="10" :min="10" :max="100"/>
+              </div>
+              <span>{{ number }}题</span>
+            </div>
+            <n-input style="width: 80px;margin:15px 15px 0 0" size="small" v-model:value="range"
+                     placeholder="输入数字"/>
+            <span>以内的运算</span>
+          </div>
+          <div class="optionsBtn">
+            <n-checkbox v-model:checked="as">加减</n-checkbox>
+            <n-checkbox v-model:checked="md">乘除</n-checkbox>
+            <n-checkbox v-model:checked="decimal">小数</n-checkbox>
+          </div>
+          <div class="startBtn">
+            <n-button style="width: 78%" strong secondary type="success" @click="start()">开始</n-button>
+            <n-popover trigger="hover">
+              <template #trigger>
+                <n-button style="width: 20%" text @click="printStatus=!printStatus;init()">
+                  <template #icon>
+                    <n-icon size="24">
+                      <PrintOutline/>
+                    </n-icon>
+                  </template>
+                </n-button>
+              </template>
+              <span>打印题目</span>
+            </n-popover>
+          </div>
         </div>
       </n-card>
     </n-modal>
@@ -366,7 +393,7 @@ const printStatus=ref(false)
 }
 
 .numberSlider {
-  width: 75%;
+  width: 85%;
 }
 
 .number span {
@@ -376,13 +403,13 @@ const printStatus=ref(false)
 }
 
 .startBtn {
-  margin-top: 5px;
+  margin-top: 15px;
   display: flex;
   justify-content: space-between;
 }
 
 .optionsBtn {
-  margin-top: 5px;
+  margin-top: 15px;
   text-align: center;
 }
 
@@ -419,9 +446,17 @@ const printStatus=ref(false)
   transition: all 0.3s ease-out;
 }
 
-.resultContent {
-  display: flex;
-  justify-content: center;
+
+
+.time{
+  text-align: center;
+  margin-bottom: 10px;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.result {
+  text-align: center;
 }
 
 .result p {
@@ -430,12 +465,14 @@ const printStatus=ref(false)
   text-align: center;
   font-weight: bold;
 }
+
 .resultBtn {
   margin-top: 20px;
   display: flex;
   justify-content: center;
 }
-.printClosBtn{
+
+.printClosBtn {
   display: flex;
   justify-content: right;
 }
